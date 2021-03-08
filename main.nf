@@ -4,12 +4,14 @@
  */
 params.reads = "$baseDir/*_{1,2}.fq"
 params.outdir = "results"
+params.fastqcpus = 2
 
 println """\
           FASTQC   P I P E L I N E
          ===================================
          reads        : ${params.reads}
          outdir       : ${params.outdir}
+         fastqcpus    : ${params.fastqcpus}
          """
          .stripIndent()
 
@@ -18,6 +20,7 @@ read_ch = Channel.fromFilePairs( params.reads, checkIfExists: true )
 
 process fastqc {
     tag "FASTQC on $sample_id"
+    cpus params.fastqcpus
 
     input:
     tuple sample_id, path(reads) from read_ch
@@ -29,7 +32,7 @@ process fastqc {
     script:
     """
     mkdir fastqc_${sample_id}_logs
-    fastqc -o fastqc_${sample_id}_logs -f fastq -q ${reads}
+    fastqc -o fastqc_${sample_id}_logs -t ${task.cpus} -f fastq -q ${reads}
     """
 }
 
